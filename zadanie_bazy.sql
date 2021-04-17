@@ -32,15 +32,15 @@ WHERE data_urodzenia = (SELECT MAX(data_urodzenia) FROM pracownik);
 DROP TABLE zadanie_23.pracownik;
 -- 9. Tworzy tabelę stanowisko (nazwa stanowiska, opis, wypłata na danym stanowisku)
 CREATE TABLE stanowisko (
-	id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    nazwa VARCHAR(50),
-    opis VARCHAR(50),
-    wyplata DECIMAL(10,2)
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    nazwa VARCHAR(50) UNIQUE NOT NULL,
+    opis VARCHAR(50) UNIQUE NOT NULL,
+    wyplata DECIMAL(10 , 2 ) NOT NULL
 );
 -- 10. Tworzy tabelę adres (ulica+numer domu/mieszkania, kod pocztowy, miejscowość)
 CREATE TABLE adres (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    ulica_numery VARCHAR(80),
+    ulica_numery VARCHAR(80) UNIQUE NOT NULL,
     kod VARCHAR(6),
     miejscowosc VARCHAR(50)
 );
@@ -49,18 +49,10 @@ CREATE TABLE pracownik (
 	id BIGINT PRIMARY KEY AUTO_INCREMENT,
     imie VARCHAR(50),
     nazwisko VARCHAR(50),
-    nazwa_stanowiska BIGINT NOT NULL,
-    opis_stanowiska BIGINT NOT NULL,
-    wyplata BIGINT NOT NULL,
-    adres_ulica BIGINT NOT NULL,
-    adres_kod BIGINT NOT NULL,
-    adres_miejscowosc BIGINT NOT NULL,
-    FOREIGN KEY (nazwa_stanowiska) REFERENCES stanowisko (id),
-    FOREIGN KEY (opis_stanowiska) REFERENCES stanowisko (id),
-    FOREIGN KEY (wyplata) REFERENCES stanowisko (id),
-    FOREIGN KEY (adres_ulica) REFERENCES adres (id),
-    FOREIGN KEY (adres_kod) REFERENCES adres (id),
-    FOREIGN KEY (adres_miejscowosc) REFERENCES adres (id)
+    adres_id BIGINT NOT NULL,
+    stanowisko_id BIGINT NOT NULL,
+	CONSTRAINT ibfk_adres_id FOREIGN KEY (adres_id) REFERENCES adres (id),
+	CONSTRAINT ibfk_stanowisko_id FOREIGN KEY (stanowisko_id) REFERENCES stanowisko (id)
 );
 -- 12. Dodaje dane testowe (w taki sposób, aby powstały pomiędzy nimi sensowne powiązania)
 INSERT INTO adres (ulica_numery, kod, miejscowosc)
@@ -87,18 +79,20 @@ VALUES
     ('starszy grafik', 'tworzy szate wydania', 12400);
     
 INSERT INTO pracownik 
-	(imie, nazwisko,nazwa_stanowiska, opis_stanowiska, wyplata, adres_ulica, adres_kod, adres_miejscowosc)
+	(imie, nazwisko, adres_id, stanowisko_id)
 VALUES
-	('Janek', 'Kozioł', 1, 2, 3, 4, 5, 6),
-    ('Marta', 'Rycerz', 2, 3, 4, 5, 6, 1),
-    ('Robert', 'Zawada', 3, 4, 5, 6, 1, 2),
-    ('Jolanta', 'Topacz', 4, 5, 6, 1, 2, 3),
-    ('Krzysztof', 'Woda', 5, 6, 1, 2, 3, 4),
-    ('Józek', 'Rączka', 6, 1, 2, 3, 4, 5),
-    ('Marcin', 'Szopa', 3, 4, 7, 8, 3, 4),
-    ('Kinga', 'Głowala', 5, 6, 5, 3, 2, 7);
+	('Janek', 'Kozioł', 1, 2),
+    ('Marta', 'Rycerz', 2, 3),
+    ('Robert', 'Zawada', 3, 4),
+    ('Jolanta', 'Topacz', 4, 5),
+    ('Krzysztof', 'Woda', 5, 6),
+    ('Józek', 'Rączka', 6, 1),
+    ('Marcin', 'Szopa', 3, 4),
+    ('Kinga', 'Głowala', 5, 6);
     
 -- 13. Pobiera pełne informacje o pracowniku (imię, nazwisko, adres, stanowisko)
-SELECT p.imie, p.nazwisko, p.adres_ulica, p.adres_kod, p.adres_miejscowosc, p.nazwa_stanowiska FROM pracownik AS p;
+SELECT p.imie, p.nazwisko, p.adres_id, p.stanowisko_id FROM pracownik AS p, stanowisko AS s WHERE p.stanowisko_id = s.id;
 -- 14. Oblicza sumę wypłat dla wszystkich pracownikow w firmie
-SELECT SUM(wyplata) AS sum_wyplata FROM pracownik 
+SELECT SUM(wyplata) AS sum_wyplata FROM stanowisko;
+-- Pobiera pracowników mieszkających w lokalizacji z kodem pocztowym 90210 (albo innym, który będzie miał sens dla Twoich danych testowych)
+SELECT * FROM pracownik WHERE pracownik.adres;
